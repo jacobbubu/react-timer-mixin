@@ -46,8 +46,8 @@
  var _setInterval = setter(setInterval, function() {/* noop */}, _intervals);
 
  var _immediates = 'TimerMixin_immediates';
- var _clearImmediate = clearer(clearImmediate, _immediates);
- var _setImmediate = setter(setImmediate, _clearImmediate, _immediates);
+ var _clearImmediate = clearImmediate ? clearer(clearImmediate, _immediates) : void 0;
+ var _setImmediate = setImmediate ? setter(setImmediate, _clearImmediate, _immediates) : void 0;
 
  var _rafs = 'TimerMixin_rafs';
  var _cancelAnimationFrame = clearer(cancelAnimationFrame, _rafs);
@@ -67,11 +67,11 @@ var TimerMixin = {
   setInterval: _setInterval,
   clearInterval: _clearInterval,
 
-  setImmediate: _setImmediate,
-  clearImmediate: _clearImmediate,
-
   requestAnimationFrame: _requestAnimationFrame,
   cancelAnimationFrame: _cancelAnimationFrame,
 };
+
+if (setImmediate) TimerMixin.setImmediate = setImmediate
+if (clearImmediate) TimerMixin.clearImmediate = clearImmediate
 
 module.exports = TimerMixin;
