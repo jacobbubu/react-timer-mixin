@@ -9,49 +9,50 @@
  */
 'use strict';
 
- var setter = function(_setter, _clearer, array) {
-   return function(callback, delta) {
-     var id = _setter(function() {
-       _clearer.call(this, id);
-       callback.apply(this, arguments);
-     }.bind(this), delta);
+var setter = function(_setter, _clearer, array) {
+  return function(callback, delta) {
+    var id = _setter(function() {
+      _clearer.call(this, id);
+      callback.apply(this, arguments);
+    }.bind(this), delta);
 
-     if (!this[array]) {
-       this[array] = [id];
-     } else {
-       this[array].push(id);
-     }
-     return id;
-   };
- };
+    if (!this[array]) {
+      this[array] = [id];
+    } else {
+      this[array].push(id);
+    }
+    return id;
+  };
+};
 
- var clearer = function(_clearer, array) {
-   return function(id) {
-     if (this[array]) {
-       var index = this[array].indexOf(id);
-       if (index !== -1) {
-         this[array].splice(index, 1);
-       }
-     }
-     _clearer(id);
-   };
- };
+var clearer = function(_clearer, array) {
+  return function(id) {
+    if (this[array]) {
+      var index = this[array].indexOf(id);
+      if (index !== -1) {
+        this[array].splice(index, 1);
+      }
+    }
+    _clearer(id);
+  };
+};
 
- var _timeouts = 'TimerMixin_timeouts';
- var _clearTimeout = clearer(clearTimeout, _timeouts);
- var _setTimeout = setter(setTimeout, _clearTimeout, _timeouts);
+var _timeouts = 'TimerMixin_timeouts';
+var _clearTimeout = clearer(clearTimeout, _timeouts);
+var _setTimeout = setter(setTimeout, _clearTimeout, _timeouts);
 
- var _intervals = 'TimerMixin_intervals';
- var _clearInterval = clearer(clearInterval, _intervals);
- var _setInterval = setter(setInterval, function() {/* noop */}, _intervals);
+var _intervals = 'TimerMixin_intervals';
+var _clearInterval = clearer(clearInterval, _intervals);
+var _setInterval = setter(setInterval, function() {/* noop */}, _intervals);
 
- var _immediates = 'TimerMixin_immediates';
- var _clearImmediate = clearImmediate ? clearer(clearImmediate, _immediates) : void 0;
- var _setImmediate = setImmediate ? setter(setImmediate, _clearImmediate, _immediates) : void 0;
+var _immediates = 'TimerMixin_immediates';
 
- var _rafs = 'TimerMixin_rafs';
- var _cancelAnimationFrame = clearer(cancelAnimationFrame, _rafs);
- var _requestAnimationFrame = setter(requestAnimationFrame, _cancelAnimationFrame, _rafs);
+var _clearImmediate = window.clearImmediate ? clearer(window.clearImmediate , _immediates) : function(){};
+var _setImmediate = window.setImmediate ? setter(window.setImmediate, _clearImmediate, _immediates) : void 0;
+
+var _rafs = 'TimerMixin_rafs';
+var _cancelAnimationFrame = clearer(cancelAnimationFrame, _rafs);
+var _requestAnimationFrame = setter(requestAnimationFrame, _cancelAnimationFrame, _rafs);
 
 var TimerMixin = {
   componentWillUnmount: function() {
@@ -67,11 +68,12 @@ var TimerMixin = {
   setInterval: _setInterval,
   clearInterval: _clearInterval,
 
+  clearImmediate: _clearImmediate,
+
   requestAnimationFrame: _requestAnimationFrame,
   cancelAnimationFrame: _cancelAnimationFrame,
 };
 
-if (setImmediate) TimerMixin.setImmediate = setImmediate
-if (clearImmediate) TimerMixin.clearImmediate = clearImmediate
+if (_setImmediate) TimerMixin.setImmediate = _setImmediate
 
 module.exports = TimerMixin;
